@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zvono</title>
+    <!-- Add manifest for PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .circle {
+            width: 200px;
+            height: 200px;
+            background-color: #3498db;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            margin: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        .circle:hover {
+            background-color: #2980b9;
+        }
+
+        .circle span {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Styling for the pop-up */
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            max-width: 300px;
+            width: 100%;
+            text-align: center;
+        }
+
+        #popup.show {
+            display: block;
+        }
+
+        #popup .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            color: #777;
+        }
+
+        #popup input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        #popup button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        #popup button:hover {
+            background-color: #2980b9;
+        }
+
+        #cooldown {
+            display: none;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="circle" onclick="openPushNotificationPopup('78921')">
+        <span>Ado</span>
+    </div>
+    <div class="circle" onclick="openPushNotificationPopup('DEVICE_ID_2')">
+        <span>Nana</span>
+    </div>
+    <div class="circle" onclick="openPushNotificationPopup('DEVICE_ID_3')">
+        <span>Eme</span>
+    </div>
+
+    <!-- Pop-up for sending push notification -->
+    <div id="popup">
+        <span class="close" onclick="closePushNotificationPopup()">x</span>
+        <input type="text" id="pushMessage" placeholder="Unesite poruku!">
+        <button id="sendButton" onclick="sendPushNotification()">Pošalji</button>
+        <div id="cooldown">Sacekajte: <span id="cooldownTimer">5</span>s</div>
+    </div>
+
+    <script>
+        let selectedDeviceId;
+        let cooldownInterval;
+        let cooldownTime = 5; // Cooldown time in seconds
+        let cooldownActive = false; // Flag to track if cooldown is active
+
+        function openPushNotificationPopup(deviceId) {
+            if (cooldownActive) {
+                alert('Please wait for the cooldown period to finish before sending another message.');
+                return;
+            }
+            selectedDeviceId = deviceId;
+            document.getElementById('popup').classList.add('show');
+            startCooldownTimer();
+        }
+
+        function closePushNotificationPopup() {
+            document.getElementById('popup').classList.remove('show');
+            clearInterval(cooldownInterval);
+            cooldownTime = 5; // Reset cooldown time
+            updateCooldownDisplay();
+        }
+
+        function sendPushNotification() {
+            if (cooldownActive) {
+                alert('Please wait for the cooldown period to finish before sending another message.');
+                return;
+            }
+            const message = document.getElementById('pushMessage').value.trim();
+            if (message === '') {
+                alert('Molimo unesite poruku.');
+                return;
+            }
+
+            // Replace with your Pushsafer API key
+            const apiKey = 'KhSM37CMb6YMgF3GVSGL';
+
+            // Construct the Pushsafer API URL with sound set to "Dorbell (Call3)"
+            const apiUrl = `https://www.pushsafer.com/api?k=${apiKey}&d=${selectedDeviceId}&s=17&m=${message}&u=https://meet.google.com/uwu-morm-ndy&ut=Kamera%20kapije`;
+
+            // Send the API request
+            fetch(apiUrl)
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Poslali ste poruku, sacekajte da vam se otvore vrata!');
+                        // Show success message in pop-up
+                        document.getElementById('popup').innerHTML = '<span class="close" onclick="closePushNotificationPopup()">x</span><p>Poslali ste poruku, sacekajte da vam se otvore vrata!</p>';
+                        setTimeout(() => {
+                            document.getElementById('popup').innerHTML = `
+                                <span class="close" onclick="closePushNotificationPopup()">x</span>
+                                <input type="text" id="pushMessage" placeholder="Unesite poruku!">
+                                <button id="sendButton" onclick="sendPushNotification()">Pošalji</button>
+                                <div id="cooldown">Sackeajte: <span id="cooldownTimer">5</span>s</div>`;
+                            startCooldownTimer();
+                        }, 3000); // Automatically reset after 3 seconds
+                    } else {
+                        console.error('Error sending push notification');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sending push notification:', error);
+                });
+        }
+
+        function startCooldownTimer() {
+            cooldownActive = true;
+            updateCooldownDisplay();
+            cooldownInterval = setInterval(() => {
+                cooldownTime--;
+                if (cooldownTime <= 0) {
+                    clearInterval(cooldownInterval);
+                    cooldownActive = false;
+                    return;
+                }
+                updateCooldownDisplay();
+            }, 1000);
+        }
+
+        function updateCooldownDisplay() {
+    const cooldownDisplay = document.getElementById('cooldown');
+    const cooldownTimer = document.getElementById('cooldownTimer');
+    cooldownDisplay.style.display = 'block';
+    cooldownTimer.textContent = cooldownTime;
+    document.getElementById('sendButton').disabled = true; // Disable send button during cooldown
+
+    const cooldownTimeout = setTimeout(() => {
+        cooldownDisplay.style.display = 'none'; // Hide cooldown display after cooldown
+        document.getElementById('sendButton').disabled = false; // Re-enable send button after cooldown
+        clearTimeout(cooldownTimeout);
+    }, cooldownTime * 1000); // Re-enable after cooldown time in milliseconds
+}
+
+    </script>
+</body>
+
+</html>
