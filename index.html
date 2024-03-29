@@ -4,12 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zvono</title>
+    <title>Kapija</title>
     <!-- Add manifest for PWA -->
     <link rel="manifest" href="/manifest.json">
     <style>
         body {
             display: flex;
+            flex-direction: column; /* Adjusted to align elements vertically */
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -17,17 +18,25 @@
             background-color: #f0f0f0;
         }
 
+        #circleContainer {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 80%; /* Adjust container width as needed */
+            margin-bottom: 20px; /* Added margin between circles and button */
+        }
+
         .circle {
             width: 200px;
             height: 200px;
             background-color: #3498db;
-            border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
             margin: 20px;
             transition: background-color 0.3s ease;
+            border-radius: 10px; /* Make circles square */
         }
 
         .circle:hover {
@@ -38,6 +47,23 @@
             color: white;
             font-size: 24px;
             font-weight: bold;
+        }
+
+        #refreshButton {
+            width: 100px; /* Adjust button width as needed */
+            height: 100px; /* Adjust button height as needed */
+            background-color: #ff0000; /* Red color */
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px; /* Make button square */
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #refreshButton:hover {
+            background-color: #cc0000; /* Darker red on hover */
         }
 
         /* Styling for the pop-up */
@@ -101,22 +127,26 @@
 </head>
 
 <body>
-    <div class="circle" onclick="openPushNotificationPopup('78921')">
-        <span>Ado</span>
+    <h1>Kapija</h1> <!-- Big title -->
+    <div id="circleContainer">
+        <div class="circle" onclick="openPushNotificationPopup('78921')">
+            <span>Ado</span>
+        </div>
+        <div class="circle" onclick="openPushNotificationPopup('DEVICE_ID_2')">
+            <span>Nana</span>
+        </div>
+        <div class="circle" onclick="openPushNotificationPopup('DEVICE_ID_3')">
+            <span>Eme</span>
+        </div>
     </div>
-    <div class="circle" onclick="openPushNotificationPopup('DEVICE_ID_2')">
-        <span>Nana</span>
-    </div>
-    <div class="circle" onclick="openPushNotificationPopup('DEVICE_ID_3')">
-        <span>Eme</span>
-    </div>
+    <button id="refreshButton" onclick="refreshPage()">Popravi</button>
 
     <!-- Pop-up for sending push notification -->
     <div id="popup">
         <span class="close" onclick="closePushNotificationPopup()">x</span>
         <input type="text" id="pushMessage" placeholder="Unesite poruku!">
         <button id="sendButton" onclick="sendPushNotification()">Pošalji</button>
-        <div id="cooldown">Sacekajte: <span id="cooldownTimer">5</span>s</div>
+        <div id="cooldown">Cooldown: <span id="cooldownTimer">5</span>s</div>
     </div>
 
     <script>
@@ -171,7 +201,7 @@
                                 <span class="close" onclick="closePushNotificationPopup()">x</span>
                                 <input type="text" id="pushMessage" placeholder="Unesite poruku!">
                                 <button id="sendButton" onclick="sendPushNotification()">Pošalji</button>
-                                <div id="cooldown">Sackeajte: <span id="cooldownTimer">5</span>s</div>`;
+                                <div id="cooldown">Cooldown: <span id="cooldownTimer">5</span>s</div>`;
                             startCooldownTimer();
                         }, 3000); // Automatically reset after 3 seconds
                     } else {
@@ -191,6 +221,7 @@
                 if (cooldownTime <= 0) {
                     clearInterval(cooldownInterval);
                     cooldownActive = false;
+                    document.getElementById('cooldown').style.display = 'none'; // Hide cooldown display after cooldown
                     return;
                 }
                 updateCooldownDisplay();
@@ -198,19 +229,22 @@
         }
 
         function updateCooldownDisplay() {
-    const cooldownDisplay = document.getElementById('cooldown');
-    const cooldownTimer = document.getElementById('cooldownTimer');
-    cooldownDisplay.style.display = 'block';
-    cooldownTimer.textContent = cooldownTime;
-    document.getElementById('sendButton').disabled = true; // Disable send button during cooldown
+            const cooldownDisplay = document.getElementById('cooldown');
+            const cooldownTimer = document.getElementById('cooldownTimer');
+            cooldownDisplay.style.display = 'block';
+            cooldownTimer.textContent = cooldownTime;
+            document.getElementById('sendButton').disabled = true; // Disable send button during cooldown
 
-    const cooldownTimeout = setTimeout(() => {
-        cooldownDisplay.style.display = 'none'; // Hide cooldown display after cooldown
-        document.getElementById('sendButton').disabled = false; // Re-enable send button after cooldown
-        clearTimeout(cooldownTimeout);
-    }, cooldownTime * 1000); // Re-enable after cooldown time in milliseconds
-}
+            const cooldownTimeout = setTimeout(() => {
+                cooldownDisplay.style.display = 'none'; // Hide cooldown display after cooldown
+                document.getElementById('sendButton').disabled = false; // Re-enable send button after cooldown
+                clearTimeout(cooldownTimeout);
+            }, cooldownTime * 1000); // Re-enable after cooldown time in milliseconds
+        }
 
+        function refreshPage() {
+            location.reload();
+        }
     </script>
 </body>
 
